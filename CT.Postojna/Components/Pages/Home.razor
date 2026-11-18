@@ -1,11 +1,19 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>CT Postojna Fast food</PageTitle>
 
-<h1>Welcome to CT Postojna!</h1>
+<h1>Menu</h1>
 
-Welcome to Slovenia.
+<p>30$ Burger menu Postajna.
+    50$ Burger menu Slovenia.
+    75$ Burger menu Maribor.
+    100$ Burger menu Ljubljana.
+</p>
 
-<br />
+<div class="row g-3">
+    <div class="col-12 col-md-6 col-lg-4">
+        <CircularGauge Title="Burgers menu price in $ (30-100 $)" Value="30" Maximum="100" />
+    </div>
+</div>
 
-<Counter IncrementAmount="10"/>
+<Counter IncrementAmount="10" />

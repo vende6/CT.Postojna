@@ -1,13 +1,15 @@
 ﻿@page "/counter"
 @rendermode InteractiveServer
 
-<PageTitle>Counter</PageTitle>
+<PageTitle>CT Postojna</PageTitle>
 
-<h1>Counter</h1>
+<h1>Best food in Slovenia. Welcome!</h1>
 
-<p role="status">Current count: @currentCount</p>
+<p role="status">Burgers to buy: @currentCount</p>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<button class="btn btn-primary" @onclick="IncrementCount">Add burgers</button>
+
+<p role="price">Total price: @currentCount $</p>
 
 @code {
     private int currentCount = 0;

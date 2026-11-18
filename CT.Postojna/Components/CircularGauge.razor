@@ -1,0 +1,30 @@
+<section class="card h-100" aria-labelledby="@TitleId">
+    <div class="card-body text-center">
+        <h2 class="h5 card-title" id="@TitleId">@Title</h2>
+        <div class="position-relative mx-auto" style="width: 180px; height: 180px;">
+            <svg viewBox="0 0 120 120" class="w-100 h-100" role="img" aria-label="@($"{Title}: {Value} of {Maximum}")">
+                <circle cx="60" cy="60" r="48" fill="none" stroke="#e9ecef" stroke-width="10" />
+                <circle cx="60" cy="60" r="48" fill="none" stroke="#0d6efd" stroke-width="10"
+                        stroke-linecap="round" stroke-dasharray="@Circumference" stroke-dashoffset="@ProgressOffset"
+                        transform="rotate(-90 60 60)" />
+                <text x="60" y="66" text-anchor="middle" font-size="24" font-weight="bold" fill="currentColor">@Value</text>
+            </svg>
+        </div>
+        <p class="text-body-secondary mb-0">of @Maximum</p>
+    </div>
+</section>
+
+@code {
+    private const double Circumference = 2 * Math.PI * 48;
+    private string TitleId => $"gauge-title-{Title.Replace(' ', '-') }";
+    private double ProgressOffset => Circumference * (1 - Math.Clamp((double)Value / Maximum, 0, 1));
+
+    [Parameter]
+    public string Title { get; set; } = "Progress";
+
+    [Parameter]
+    public int Value { get; set; } = 30;
+
+    [Parameter]
+    public int Maximum { get; set; } = 100;
+}
