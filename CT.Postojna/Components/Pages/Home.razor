@@ -1,19 +1,42 @@
 ﻿@page "/"
+@rendermode InteractiveServer
 
 <PageTitle>CT Postojna Fast food</PageTitle>
 
-<h1>Menu</h1>
+<h1>Burger Menu</h1>
 
-<p>30$ Burger menu Postajna.
-    50$ Burger menu Slovenia.
-    75$ Burger menu Maribor.
-    100$ Burger menu Ljubljana.
-</p>
-
-<div class="row g-3">
-    <div class="col-12 col-md-6 col-lg-4">
-        <CircularGauge Title="Burgers menu price in $ (30-100 $)" Value="30" Maximum="100" />
+<div class="row g-4 align-items-start">
+    <div class="col-12 col-lg-6">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="h5 card-title">Choose your menu</h2>
+                <label for="burger-menu" class="form-label">Menu and price</label>
+                <select id="burger-menu" class="form-select mb-3" @bind="selectedMenuPrice">
+                    <option value="30">Postojna - $30</option>
+                    <option value="50">Slovenia - $50</option>
+                    <option value="75">Maribor - $75</option>
+                    <option value="100">Ljubljana - $100</option>
+                </select>
+                <button class="btn btn-primary" @onclick="AddBurger">Add burger</button>
+                <p class="mt-3 mb-1" role="status">Burgers added: @burgerCount</p>
+                <p class="mb-0">Total price: $@totalPrice</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-6">
+        <CircularGauge Title="Total burger menu price" Value="totalPrice" Maximum="5000" />
+        <p class="text-body-secondary small mt-2">Gauge scale: $0 to $5000</p>
     </div>
 </div>
 
-<Counter IncrementAmount="10" />
+@code {
+    private int selectedMenuPrice = 30;
+    private int burgerCount;
+    private int totalPrice;
+
+    private void AddBurger()
+    {
+        burgerCount++;
+        totalPrice += selectedMenuPrice;
+    }
+}
