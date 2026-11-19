@@ -1,32 +1,41 @@
 ﻿@page "/counter"
-@rendermode InteractiveServer
+@using CT.Postojna.Models
+@using CT.Postojna.Services
 
-<PageTitle>CT Postojna</PageTitle>
+<PageTitle>Immigrants</PageTitle>
 
-<h1>Best food in Slovenia. Welcome!</h1>
+<h1>Immigrants</h1>
+<p>People registered with CT Postojna.</p>
 
-<p role="status">Burgers to buy: @currentCount</p>
-
-<button class="btn btn-primary" @onclick="IncrementCount">Add burgers</button>
-
-<p role="price">Total price: @currentCount $</p>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Age</th>
+            <th>Citizenship</th>
+            <th>Nationality</th>
+            <th>Bio</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var person in Immigrants)
+        {
+            <tr>
+                <td>@person.FirstName @person.LastName</td>
+                <td>@person.Age</td>
+                <td>@person.Citizenship</td>
+                <td>@person.Nationality</td>
+                <td>@person.Bio</td>
+            </tr>
+        }
+    </tbody>
+</table>
 
 @code {
-    private int currentCount = 0;
+    private IEnumerable<Person> Immigrants { get; set; } = [];
 
-    [Parameter]
-    public int IncrementAmount { get; set; } = 2;
-
-    private void IncrementCount()
+    protected override void OnInitialized()
     {
-        currentCount += IncrementAmount;
+        Immigrants = PersonService.GeneratePersons();
     }
 }
-<p>
-    Pa, London sada izgleda daleko, ali da, to je moj tip događaja. To je sigurno, iako sam zaglavljen na graničnom prijelazu i sad radim na Blazoru. haha za kolektiv imigranata. Uvijek je dobro imati neko nasumično nadahnuće na putu za Berlin. Pa, ima toliko toga sa .NET 11, ali uskoro ću uhvatiti korak, a do Londona je daleko, daleko. Previše vremena da obradim vizu, ali nadam se da ću te uskoro vidjeti na nekom od tvojih budućih događaja u Europi, poput Kölna, zar ne? I onom u Krakovu!
-
-    Usput, lijepo je vidjeti da se zaljubljeni još uvijek drže u toku s najnovijim trendovima.
-</p>
-<footer>
-    <p>&copy; 2026 - CT Postojna</p>
-    </footer>

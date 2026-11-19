@@ -2,39 +2,39 @@
 @using CT.Postojna.Models
 @using CT.Postojna.Services
 
-<PageTitle>Product Overview</PageTitle>
+<PageTitle>Activities</PageTitle>
 
-<h1>Product Overview</h1>
+<h1>Activities</h1>
 
-<table class="table">
+<table class="table table-striped">
     <thead>
         <tr>
             <th>Id</th>
-            <th>Product Name</th>
-            <th>Price</th>
-            <th>Quantity</th>
-            <th>Released</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Category</th>
+            <th>Duration</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var product in GridData)
+        @foreach (var activity in Activities)
         {
             <tr>
-                <td>@product.Id</td>
-                <td>@product.Name</td>
-                <td>@product.Price?.ToString("C2")</td>
-                <td>@product.Quantity</td>
-                <td>@product.Released?.ToString("d")</td>
+                <td>@activity.Id</td>
+                <td>@activity.Name</td>
+                <td>@activity.Description</td>
+                <td>@activity.CategoryName</td>
+                <td>@activity.Duration</td>
             </tr>
         }
     </tbody>
 </table>
 
 @code {
-    private IEnumerable<Product> GridData { get; set; } = [];
+    private IEnumerable<Activity> Activities { get; set; } = [];
 
     protected override void OnInitialized()
     {
-        GridData = ProductService.GenerateProducts();
+        Activities = ActivityService.GenerateActivities();
     }
 }
