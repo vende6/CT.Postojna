@@ -4,7 +4,7 @@ namespace CT.Postojna
 {
     public class DbConnection
     {
-        private readonly string connStr = "Server=YOUR_HOST;Port=3306;Database=YOUR_DB;Uid=YOUR_USER;Pwd=YOUR_PASSWORD;";
+        private readonly string connStr = "Server=sql8.freesqldatabase.com;Port=3306;Database=sql8841003;Uid=sql8841003;Pwd=EZTwry86LA;";
 
         public MySqlConnection CreateConnection() => new(connStr);
     }
