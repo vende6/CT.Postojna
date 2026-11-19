@@ -10,6 +10,7 @@
   <ItemGroup>
     <PackageReference Include="MySql.Data" Version="26.10.0" />
     <PackageReference Include="Oracle.ManagedDataAccess" Version="23.26.400" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="11.0.1" />
   </ItemGroup>
 
 </Project>

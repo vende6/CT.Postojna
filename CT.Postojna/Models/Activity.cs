@@ -10,6 +10,8 @@
         public string Duration { get; set; }
         public string AheadOfTimeGOAT { get; set; }
         public IEnumerable<Person> values { get; set; }
+
+
     }
 
 }
