@@ -5,11 +5,22 @@ namespace CT.Postojna.Services
 {
     public class PersonService(DbConnection database)
     {
-        public static IEnumerable<Person> GeneratePersons() => new List<Person>
-        {
-            new() { Id = 1, FirstName = "John", LastName = "Jones", Bio = "A software developer from New York.", Nickname = "Johnny", Height = 180.5m, Weight = 75.0m, Age = 30, Citizenship = "Russia", Nationality = "German", Released = DateTime.Now.AddYears(-5) },
-            new() { Id = 2, FirstName = "Jane", LastName = "Smith", Bio = "An artist based in Paris.", Nickname = "Janie", Height = 165.0m, Weight = 60.0m, Age = 28, Citizenship = "Russia", Nationality = "French", Released = DateTime.Now.AddYears(-3) }
-        };
+        public static IEnumerable<Person> GenerateImmigrants() =>
+        [
+            new() { Id = 1, FirstName = "Emin", Citizenship = "Afghanistan" },
+            new() { Id = 2, FirstName = "Musa", Citizenship = "Tunisia" },
+            new() { Id = 3, FirstName = "Sulejman", Citizenship = "Algeria" },
+            new() { Id = 4, FirstName = "Damir", Citizenship = "Turkey" },
+            new() { Id = 5, FirstName = "Kevser", Citizenship = "Argentina" },
+            new() { Id = 6, FirstName = "Tristan", Citizenship = "Kosovo" },
+            new() { Id = 7, FirstName = "Bosnia", Citizenship = "Bosnia" }
+        ];
+
+        public static IEnumerable<Person> GenerateStaff() =>
+        [
+            new() { Id = 1, FirstName = "Monika" },
+            new() { Id = 2, FirstName = "Inspector" }
+        ];
 
         public async Task<List<Person>> GetAllAsync()
         {

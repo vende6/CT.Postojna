@@ -11,21 +11,15 @@
     <thead>
         <tr>
             <th>Name</th>
-            <th>Age</th>
-            <th>Citizenship</th>
-            <th>Nationality</th>
-            <th>Bio</th>
+            <th>Place of origin</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var person in Immigrants)
         {
             <tr>
-                <td>@person.FirstName @person.LastName</td>
-                <td>@person.Age</td>
+                <td>@person.FirstName</td>
                 <td>@person.Citizenship</td>
-                <td>@person.Nationality</td>
-                <td>@person.Bio</td>
             </tr>
         }
     </tbody>
@@ -36,6 +30,6 @@
 
     protected override void OnInitialized()
     {
-        Immigrants = PersonService.GeneratePersons();
+        Immigrants = PersonService.GenerateImmigrants();
     }
 }

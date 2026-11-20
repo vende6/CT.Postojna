@@ -11,21 +11,13 @@
     <thead>
         <tr>
             <th>Name</th>
-            <th>Nickname</th>
-            <th>Age</th>
-            <th>Nationality</th>
-            <th>Bio</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var person in Staff)
         {
             <tr>
-                <td>@person.FirstName @person.LastName</td>
-                <td>@person.Nickname</td>
-                <td>@person.Age</td>
-                <td>@person.Nationality</td>
-                <td>@person.Bio</td>
+                <td>@person.FirstName</td>
             </tr>
         }
     </tbody>
@@ -36,6 +28,6 @@
 
     protected override void OnInitialized()
     {
-        Staff = PersonService.GeneratePersons();
+        Staff = PersonService.GenerateStaff();
     }
 }

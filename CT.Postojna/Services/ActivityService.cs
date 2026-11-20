@@ -5,17 +5,64 @@ namespace CT.Postojna.Services
 {
     public class ActivityService(DbConnection database)
     {
-        public static IEnumerable<Activity> GenerateActivities() => Enumerable.Range(1, 100).Select(i => new Activity
-        {
-            Id = i,
-            CategoryId = i % 5 == 0 ? null : i % 5,
-            CategoryName = i % 5 == 0 ? string.Empty : $"Category {i % 5}",
-            Name = $"Activity {i}",
-            Description = $"Description for activity {i}",
-            Duration = $"{Random.Shared.Next(30, 120)} minutes",
-            AheadOfTimeGOAT = string.Empty,
-            values = Array.Empty<Person>()
-        });
+        public static IEnumerable<Activity> GenerateActivities() =>
+        [
+            new Activity
+            {
+                Id = 1,
+                CategoryId = 1,
+                CategoryName = "Sports",
+                Name = "Football",
+                Description = "Play a game of football.",
+                Duration = "60 minutes",
+                AheadOfTimeGOAT = string.Empty,
+                values = Array.Empty<Person>()
+            },
+            new Activity
+            {
+                Id = 2,
+                CategoryId = 2,
+                CategoryName = "Household",
+                Name = "Cleaning",
+                Description = "Tidy and clean the home.",
+                Duration = "30 minutes",
+                AheadOfTimeGOAT = string.Empty,
+                values = Array.Empty<Person>()
+            },
+            new Activity
+            {
+                Id = 3,
+                CategoryId = 3,
+                CategoryName = "Leisure",
+                Name = "Reading",
+                Description = "Spend some time reading a book.",
+                Duration = "30 minutes",
+                AheadOfTimeGOAT = string.Empty,
+                values = Array.Empty<Person>()
+            },
+            new Activity
+            {
+                Id = 4,
+                CategoryId = 4,
+                CategoryName = "Games",
+                Name = "Monopoly",
+                Description = "Play a game of Monopoly.",
+                Duration = "90 minutes",
+                AheadOfTimeGOAT = string.Empty,
+                values = Array.Empty<Person>()
+            },
+            new Activity
+            {
+                Id = 5,
+                CategoryId = 1,
+                CategoryName = "Sports",
+                Name = "Basketball",
+                Description = "Play a game of basketball.",
+                Duration = "60 minutes",
+                AheadOfTimeGOAT = string.Empty,
+                values = Array.Empty<Person>()
+            }
+        ];
 
         public async Task<List<Activity>> GetAllAsync()
         {
