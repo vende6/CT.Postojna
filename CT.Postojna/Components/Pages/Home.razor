@@ -1,5 +1,7 @@
 ﻿@page "/"
 @rendermode InteractiveServer
+@inject CT.Postojna.Services.StripeCheckoutService StripeCheckout
+@inject NavigationManager NavigationManager
 
 <PageTitle>CT Postojna</PageTitle>
 
@@ -17,7 +19,7 @@
                     <option value="75">Maribor Burger XL - $75</option>
                     <option value="100">Ljubljana Burger XXL - $100</option>
                 </select>
-                <button class="btn btn-primary" @onclick="AddBurger">Add burger</button>
+                <button class="btn btn-primary" disabled="@isCheckoutInProgress" @onclick="AddBurger">Add burger</button>
                 <p class="mt-3 mb-1" role="status">Burgers added: @burgerCount</p>
                 <p class="mb-0">Total price: $@totalPrice</p>
             </div>
@@ -43,7 +45,7 @@
                     <option value="75">Maribor Pasta Arabiata - $75</option>
                     <option value="100">Ljubljana Pasta - $100</option>
                 </select>
-                <button class="btn btn-primary" @onclick="AddPasta">Add pasta</button>
+                <button class="btn btn-primary" disabled="@isCheckoutInProgress" @onclick="AddPasta">Add pasta</button>
                 <p class="mt-3 mb-1" role="status">Pasta added: @pastaCount</p>
                 <p class="mb-0">Total pasta price: $@totalPastaPrice</p>
             </div>
@@ -55,7 +57,62 @@
     </div>
 </div>
 
-<footer class="bottom-row px-4">
+<div class="cart-widget">
+    <button type="button" class="btn btn-primary cart-toggle" aria-expanded="@isCartOpen" aria-controls="shopping-cart-panel" @onclick="ToggleCart">
+        <svg class="cart-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2Zm10 0c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2ZM7.17 14.75l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.86-7.01A1 1 0 0 0 20.28 3H5.21l-.94-2H1v2h2l3.6 7.59-1.35 2.45C4.52 14.37 5.48 16 7 16h12v-2H7.42a.25.25 0 0 1-.25-.25Z" />
+        </svg>
+        <span>Cart</span>
+        <span class="badge rounded-pill bg-light text-primary">@cartItemCount</span>
+    </button>
+
+    @if (isCartOpen)
+    {
+        <section id="shopping-cart-panel" class="cart-panel" role="region" aria-label="Shopping cart">
+            <div class="cart-panel-header">
+                <h2 class="h5 mb-0">Your cart</h2>
+                <button type="button" class="btn-close" aria-label="Close cart" @onclick="ToggleCart"></button>
+            </div>
+            @if (cartItems.Count == 0)
+            {
+                <p class="text-body-secondary mb-0">Your cart is empty. Add a burger or pasta to get started.</p>
+            }
+            else
+            {
+                <ul class="cart-items">
+                    @foreach (var item in cartItems)
+                    {
+                        <li @key="item.Name" class="cart-item">
+                            <div class="cart-item-details">
+                                <strong>@item.Name</strong>
+                                <span class="text-body-secondary">@item.Category · $@item.Price.ToString("N2") each</span>
+                            </div>
+                            <div class="cart-item-quantity">
+                                <span>× @item.Quantity</span>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" disabled="@isCheckoutInProgress" aria-label="Remove one @item.Name from cart" @onclick="(() => RemoveFromCart(item))">Remove</button>
+                            </div>
+                            <strong>$@((item.Price * item.Quantity).ToString("N2"))</strong>
+                        </li>
+                    }
+                </ul>
+                <div class="cart-total">
+                    <span>Total (@cartItemCount items)</span>
+                    <strong>$@cartTotal.ToString("N2")</strong>
+                </div>
+                @if (!string.IsNullOrEmpty(checkoutError))
+                {
+                    <p class="text-danger mt-3 mb-0" role="alert">@checkoutError</p>
+                }
+                <button type="button" class="btn btn-primary w-100 mt-3" disabled="@isCheckoutInProgress" @onclick="CheckoutAsync">
+                    @(isCheckoutInProgress ? "Connecting to Stripe..." : "Checkout with Stripe")
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-sm mt-3" disabled="@isCheckoutInProgress" @onclick="ClearCart">Clear cart</button>
+            }
+        </section>
+    }
+</div>
+
+<footer class="bottom-row app-primary px-4">
     <div class="footer-section">
         <a href="/documentation">
             <span class="bi bi-book" aria-hidden="true"></span>made in .NET 11
@@ -81,23 +138,127 @@
 
 @code {
 
+    private readonly List<CartItem> cartItems = [];
     private int selectedMenuPrice = 30;
-    private int burgerCount;
-    private int totalPrice;
+    private int selectedPastaPrice = 30;
+    private bool isCartOpen;
+    private bool isCheckoutInProgress;
+    private string? checkoutError;
+
+    private int burgerCount => cartItems.Where(item => item.Category == "Burger").Sum(item => item.Quantity);
+    private int totalPrice => cartItems.Where(item => item.Category == "Burger").Sum(item => item.Price * item.Quantity);
+    private int pastaCount => cartItems.Where(item => item.Category == "Pasta").Sum(item => item.Quantity);
+    private int totalPastaPrice => cartItems.Where(item => item.Category == "Pasta").Sum(item => item.Price * item.Quantity);
+    private int cartItemCount => cartItems.Sum(item => item.Quantity);
+    private int cartTotal => cartItems.Sum(item => item.Price * item.Quantity);
 
     private void AddBurger()
     {
-        burgerCount++;
-        totalPrice += selectedMenuPrice;
+        AddToCart(GetBurgerProductId(selectedMenuPrice), "Burger", GetBurgerName(selectedMenuPrice), selectedMenuPrice);
     }
-
-    private int selectedPastaPrice = 30;
-    private int pastaCount;
-    private int totalPastaPrice;
 
     private void AddPasta()
     {
-        pastaCount++;
-        totalPastaPrice += selectedPastaPrice;
+        AddToCart(GetPastaProductId(selectedPastaPrice), "Pasta", GetPastaName(selectedPastaPrice), selectedPastaPrice);
+    }
+
+    private void AddToCart(string productId, string category, string name, int price)
+    {
+        checkoutError = null;
+        var cartItem = cartItems.FirstOrDefault(item => item.ProductId == productId);
+        if (cartItem is null)
+        {
+            cartItems.Add(new CartItem(productId, name, category, price));
+        }
+        else
+        {
+            cartItem.Quantity++;
+        }
+    }
+
+    private async Task CheckoutAsync()
+    {
+        checkoutError = null;
+        isCheckoutInProgress = true;
+        try
+        {
+            var checkoutUrl = await StripeCheckout.CreateCheckoutSessionAsync(
+                cartItems.Select(item => (item.ProductId, item.Quantity)),
+                NavigationManager.ToAbsoluteUri("/"));
+            NavigationManager.NavigateTo(checkoutUrl.AbsoluteUri, forceLoad: true);
+        }
+        catch (CT.Postojna.Services.StripeCheckoutException exception)
+        {
+            checkoutError = exception.Message;
+        }
+        finally
+        {
+            isCheckoutInProgress = false;
+        }
+    }
+
+    private void RemoveFromCart(CartItem item)
+    {
+        checkoutError = null;
+        if (--item.Quantity == 0)
+        {
+            cartItems.Remove(item);
+        }
+    }
+
+    private void ClearCart()
+    {
+        cartItems.Clear();
+        checkoutError = null;
+    }
+
+    private void ToggleCart()
+    {
+        isCartOpen = !isCartOpen;
+    }
+
+    private static string GetBurgerProductId(int price) => price switch
+    {
+        30 => "burger-postojna",
+        50 => "burger-slovenia",
+        75 => "burger-maribor",
+        100 => "burger-ljubljana",
+        _ => throw new ArgumentOutOfRangeException(nameof(price))
+    };
+
+    private static string GetPastaProductId(int price) => price switch
+    {
+        30 => "pasta-postojna",
+        50 => "pasta-slovenia",
+        75 => "pasta-maribor",
+        100 => "pasta-ljubljana",
+        _ => throw new ArgumentOutOfRangeException(nameof(price))
+    };
+
+    private static string GetBurgerName(int price) => price switch
+    {
+        30 => "Postojna Burger L",
+        50 => "Slovenia Burger XL",
+        75 => "Maribor Burger XL",
+        100 => "Ljubljana Burger XXL",
+        _ => throw new ArgumentOutOfRangeException(nameof(price))
+    };
+
+    private static string GetPastaName(int price) => price switch
+    {
+        30 => "Postojna Pasta Bolognese",
+        50 => "Slovenia Pasta Verdura",
+        75 => "Maribor Pasta Arabiata",
+        100 => "Ljubljana Pasta",
+        _ => throw new ArgumentOutOfRangeException(nameof(price))
+    };
+
+    private sealed class CartItem(string productId, string name, string category, int price)
+    {
+        public string ProductId { get; } = productId;
+        public string Name { get; } = name;
+        public string Category { get; } = category;
+        public int Price { get; } = price;
+        public int Quantity { get; set; } = 1;
     }
 }

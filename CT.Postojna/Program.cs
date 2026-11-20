@@ -11,6 +11,7 @@ builder.Services.AddScoped<DbConnection>();
 builder.Services.AddScoped<ActivityService>();
 builder.Services.AddScoped<PersonService>();
 builder.Services.AddScoped<ProductService>();
+builder.Services.AddHttpClient<StripeCheckoutService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
