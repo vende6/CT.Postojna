@@ -29,7 +29,58 @@
     </div>
 </div>
 
+<h1>Pasta Menu</h1>
+
+<div class="row g-4 align-items-start">
+    <div class="col-12 col-lg-6">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="h5 card-title">Choose your pasta</h2>
+                <label for="burger-menu" class="form-label">Menu and price</label>
+                <select id="burger-menu" class="form-select mb-3" @bind="selectedPastaPrice">
+                    <option value="30">Postojna Pasta Bolognese - $30</option>
+                    <option value="50">Slovenia Pasta Verdura - $50</option>
+                    <option value="75">Maribor Pasta Arabiata - $75</option>
+                    <option value="100">Ljubljana Pasta - $100</option>
+                </select>
+                <button class="btn btn-primary" @onclick="AddPasta">Add pasta</button>
+                <p class="mt-3 mb-1" role="status">Pasta added: @pastaCount</p>
+                <p class="mb-0">Total pasta price: $@totalPastaPrice</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-lg-6">
+        <CircularGauge Title="Total pasta menu price" Value="totalPastaPrice" Maximum="3000" />
+        <p class="text-body-secondary small mt-2">Gauge scale: $0 to $3000</p>
+    </div>
+</div>
+
+<footer class="bottom-row px-4">
+    <div class="footer-section">
+        <a href="/documentation">
+            <span class="bi bi-book" aria-hidden="true"></span>made in .NET 11
+        </a>
+    </div>
+    <div class="footer-section">
+        <a href="/version">
+            <span class="bi bi-cake2" aria-hidden="true"></span>Beta version
+        </a>
+    </div>
+    <div class="footer-section">
+        <a href="https://github.com/vende6">
+            <span class="bi bi-git" aria-hidden="true"></span>https://github.com/vende6
+        </a>
+    </div>
+    <div class="footer-section">
+        <a href="damir.krkalic@edu.fit.ba">
+            <span class="bi bi-chat-heart" aria-hidden="true"></span>damir.krkalic@edu.fit.ba
+        </a>
+    </div>
+</footer>
+
+
 @code {
+
     private int selectedMenuPrice = 30;
     private int burgerCount;
     private int totalPrice;
@@ -38,5 +89,15 @@
     {
         burgerCount++;
         totalPrice += selectedMenuPrice;
+    }
+
+    private int selectedPastaPrice = 30;
+    private int pastaCount;
+    private int totalPastaPrice;
+
+    private void AddPasta()
+    {
+        pastaCount++;
+        totalPastaPrice += selectedPastaPrice;
     }
 }
