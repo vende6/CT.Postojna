@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0d6efd">
+    <title>CT Postojna | Menu</title>
+    <style>
+        :root {
+            color-scheme: light;
+            font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+            color: #212529;
+            background: #f8f9fa;
+            --primary: #0d6efd;
+        }
+
+        * { box-sizing: border-box; }
+        body { margin: 0; padding-bottom: 5rem; }
+        header { padding: 1rem clamp(1rem, 5vw, 4rem); color: white; background: var(--primary); }
+        header strong { font-size: 1.15rem; }
+        main { width: min(1100px, calc(100% - 2rem)); margin: 2rem auto; }
+        h1 { margin-bottom: .35rem; }
+        .intro { margin-top: 0; color: #5c636a; }
+        .notice { padding: .8rem 1rem; border: 1px solid #b6d4fe; border-radius: .5rem; color: #084298; background: #cfe2ff; }
+        .menu-section { margin-top: 2rem; }
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+        .menu-card { display: flex; flex-direction: column; gap: .75rem; padding: 1.1rem; border: 1px solid #dee2e6; border-radius: .75rem; background: white; box-shadow: 0 .15rem .5rem #0000000a; }
+        .menu-card h3, .menu-card p { margin: 0; }
+        .menu-card p { color: #6c757d; }
+        button { min-height: 2.5rem; padding: .5rem .85rem; border: 1px solid var(--primary); border-radius: .4rem; color: white; background: var(--primary); font: inherit; font-weight: 600; cursor: pointer; }
+        button:hover:not(:disabled) { background: #0b5ed7; }
+        button:focus-visible { outline: 3px solid #9ec5fe; outline-offset: 2px; }
+        button:disabled { border-color: #adb5bd; background: #adb5bd; cursor: not-allowed; }
+        .cart-widget { position: fixed; right: 1.25rem; bottom: 1.25rem; z-index: 2; }
+        .cart-toggle { border-radius: 999px; box-shadow: 0 .25rem .75rem #0003; }
+        .cart-panel { position: absolute; right: 0; bottom: calc(100% + .75rem); width: min(25rem, calc(100vw - 2.5rem)); max-height: min(70vh, 32rem); overflow: auto; padding: 1rem; border: 1px solid #dee2e6; border-radius: .75rem; background: white; box-shadow: 0 .5rem 1.5rem #0003; }
+        .cart-heading, .cart-row, .cart-total { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+        .cart-heading { margin-bottom: 1rem; }
+        .cart-heading h2 { margin: 0; font-size: 1.2rem; }
+        .cart-heading button { min-height: auto; padding: .25rem .5rem; }
+        .cart-list { display: grid; gap: .75rem; margin: 0; padding: 0; list-style: none; }
+        .cart-row { align-items: flex-start; padding-bottom: .75rem; border-bottom: 1px solid #dee2e6; }
+        .cart-row small { display: block; color: #6c757d; }
+        .cart-row button { min-height: auto; padding: .2rem .45rem; color: #495057; border-color: #adb5bd; background: white; font-size: .85rem; }
+        .cart-total { margin-top: 1rem; font-size: 1.05rem; }
+        .checkout-note { margin: .75rem 0 0; color: #842029; font-size: .9rem; }
+        footer { padding: 1.25rem; color: white; text-align: center; background: var(--primary); }
+        @media (max-width: 500px) { .cart-widget { right: .75rem; bottom: .75rem; } }
+    </style>
+</head>
+<body>
+    <header><strong>CT Postojna</strong></header>
+    <main>
+        <h1>Menu</h1>
+        <p class="intro">Choose a burger or pasta and add it to your cart.</p>
+        <p class="notice"><strong>Static demo:</strong> cart actions work in this browser. Payments, database operations, and server features are not available on GitHub Pages.</p>
+
+        <section class="menu-section" aria-labelledby="burger-heading">
+            <h2 id="burger-heading">Burger Menu</h2>
+            <div class="menu-grid" id="burger-menu"></div>
+        </section>
+        <section class="menu-section" aria-labelledby="pasta-heading">
+            <h2 id="pasta-heading">Pasta Menu</h2>
+            <div class="menu-grid" id="pasta-menu"></div>
+        </section>
+    </main>
+
+    <div class="cart-widget">
+        <button class="cart-toggle" type="button" id="cart-toggle" aria-expanded="false" aria-controls="cart-panel">
+            <span aria-hidden="true">🛒</span> Cart <span id="cart-count">0</span>
+        </button>
+        <section class="cart-panel" id="cart-panel" aria-label="Shopping cart" hidden>
+            <div class="cart-heading">
+                <h2>Your cart</h2>
+                <button type="button" id="cart-close" aria-label="Close cart">Close</button>
+            </div>
+            <p id="cart-empty">Your cart is empty. Add an item to get started.</p>
+            <ul class="cart-list" id="cart-list"></ul>
+            <div class="cart-total" id="cart-total" hidden><span>Total (<span id="total-count">0</span> items)</span><strong id="total-price">$0.00</strong></div>
+            <button type="button" id="checkout" disabled>Checkout with Stripe</button>
+            <p class="checkout-note">Stripe checkout is unavailable in this static demo.</p>
+        </section>
+    </div>
+
+    <footer>CT Postojna · Static GitHub Pages demo</footer>
+
+    <script>
+        const products = [
+            { id: "burger-postojna", name: "Postojna Burger L", category: "Burger", price: 30 },
+            { id: "burger-slovenia", name: "Slovenia Burger XL", category: "Burger", price: 50 },
+            { id: "burger-maribor", name: "Maribor Burger XL", category: "Burger", price: 75 },
+            { id: "burger-ljubljana", name: "Ljubljana Burger XXL", category: "Burger", price: 100 },
+            { id: "pasta-postojna", name: "Postojna Pasta Bolognese", category: "Pasta", price: 30 },
+            { id: "pasta-slovenia", name: "Slovenia Pasta Verdura", category: "Pasta", price: 50 },
+            { id: "pasta-maribor", name: "Maribor Pasta Arabiata", category: "Pasta", price: 75 },
+            { id: "pasta-ljubljana", name: "Ljubljana Pasta", category: "Pasta", price: 100 }
+        ];
+        const cart = new Map();
+        const dollars = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+        const cartPanel = document.getElementById("cart-panel");
+        const cartToggle = document.getElementById("cart-toggle");
+
+        function addProduct(product) {
+            cart.set(product.id, (cart.get(product.id) || 0) + 1);
+            renderCart();
+        }
+
+        function removeProduct(product) {
+            const quantity = cart.get(product.id) || 0;
+            if (quantity <= 1) cart.delete(product.id);
+            else cart.set(product.id, quantity - 1);
+            renderCart();
+        }
+
+        function renderMenu(category, targetId) {
+            const target = document.getElementById(targetId);
+            for (const product of products.filter(item => item.category === category)) {
+                const card = document.createElement("article");
+                card.className = "menu-card";
+                const name = document.createElement("h3");
+                name.textContent = product.name;
+                const price = document.createElement("p");
+                price.textContent = dollars.format(product.price);
+                const button = document.createElement("button");
+                button.type = "button";
+                button.textContent = `Add ${category.toLowerCase()}`;
+                button.addEventListener("click", () => addProduct(product));
+                card.append(name, price, button);
+                target.append(card);
+            }
+        }
+
+        function renderCart() {
+            const list = document.getElementById("cart-list");
+            list.replaceChildren();
+            let itemCount = 0;
+            let total = 0;
+
+            for (const product of products) {
+                const quantity = cart.get(product.id) || 0;
+                if (quantity === 0) continue;
+                itemCount += quantity;
+                total += product.price * quantity;
+
+                const row = document.createElement("li");
+                row.className = "cart-row";
+                const details = document.createElement("span");
+                details.append(document.createTextNode(product.name));
+                const info = document.createElement("small");
+                info.textContent = `${quantity} × ${dollars.format(product.price)}`;
+                details.append(info);
+                const remove = document.createElement("button");
+                remove.type = "button";
+                remove.textContent = "Remove one";
+                remove.setAttribute("aria-label", `Remove one ${product.name}`);
+                remove.addEventListener("click", () => removeProduct(product));
+                row.append(details, remove);
+                list.append(row);
+            }
+
+            document.getElementById("cart-count").textContent = String(itemCount);
+            document.getElementById("total-count").textContent = String(itemCount);
+            document.getElementById("total-price").textContent = dollars.format(total);
+            document.getElementById("cart-empty").hidden = itemCount > 0;
+            document.getElementById("cart-total").hidden = itemCount === 0;
+            document.getElementById("checkout").disabled = true;
+        }
+
+        function setCartOpen(isOpen) {
+            cartPanel.hidden = !isOpen;
+            cartToggle.setAttribute("aria-expanded", String(isOpen));
+        }
+
+        renderMenu("Burger", "burger-menu");
+        renderMenu("Pasta", "pasta-menu");
+        renderCart();
+        cartToggle.addEventListener("click", () => setCartOpen(cartPanel.hidden));
+        document.getElementById("cart-close").addEventListener("click", () => setCartOpen(false));
+    </script>
+</body>
+</html>
