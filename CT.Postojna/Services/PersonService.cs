@@ -38,6 +38,23 @@ namespace CT.Postojna.Services
             return people;
         }
 
+        public async Task<List<Person>> GetByCategoryAsync(int categoryId)
+        {
+            await using var connection = database.CreateConnection();
+            await connection.OpenAsync();
+            await using var command = new MySqlCommand("SELECT Id, CategoryId, FirstName, LastName, Bio, Discontinued, Nickname, Height, Weight, Age, Citizenship, Nationality, Released FROM Person WHERE CategoryId = @CategoryId", connection);
+            command.Parameters.AddWithValue("@CategoryId", categoryId);
+            await using var reader = await command.ExecuteReaderAsync();
+            var people = new List<Person>();
+
+            while (await reader.ReadAsync())
+            {
+                people.Add(ReadPerson(reader));
+            }
+
+            return people;
+        }
+
         public async Task<Person?> GetByIdAsync(int id)
         {
             await using var connection = database.CreateConnection();

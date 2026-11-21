@@ -1,35 +1,6 @@
 ﻿@page "/counter"
-@using CT.Postojna.Models
-@using CT.Postojna.Services
+@rendermode InteractiveServer
 
 <PageTitle>Immigrants</PageTitle>
 
-<h1>Immigrants</h1>
-<p>People registered with CT Postojna.</p>
-
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Place of origin</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var person in Immigrants)
-        {
-            <tr>
-                <td>@person.FirstName</td>
-                <td>@person.Citizenship</td>
-            </tr>
-        }
-    </tbody>
-</table>
-
-@code {
-    private IEnumerable<Person> Immigrants { get; set; } = [];
-
-    protected override void OnInitialized()
-    {
-        Immigrants = PersonService.GenerateImmigrants();
-    }
-}
+<PeopleManager CategoryId="1" Title="Immigrants" Singular="immigrant" />

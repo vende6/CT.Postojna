@@ -1,0 +1,308 @@
+@using CT.Postojna.Models
+@using CT.Postojna.Services
+@inject PersonService PersonService
+@inject ILogger<PeopleManager> Logger
+
+<div class="container-fluid py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <h1 class="h2 mb-1">@Title</h1>
+            <p class="text-body-secondary mb-0">Create, edit, and manage @Title.ToLowerInvariant() records.</p>
+        </div>
+        <button type="button" class="btn btn-primary" @onclick="StartCreate">Add @Singular</button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger" role="alert">@errorMessage</div>
+    }
+    @if (!string.IsNullOrEmpty(statusMessage))
+    {
+        <div class="alert alert-success" role="status">@statusMessage</div>
+    }
+
+    @if (isEditing)
+    {
+        <section class="card shadow-sm mb-4" aria-labelledby="person-form-heading">
+            <div class="card-header bg-body d-flex justify-content-between align-items-center">
+                <h2 id="person-form-heading" class="h5 mb-0">@(editPerson.Id == 0 ? $"New {Singular}" : $"Edit {Singular}")</h2>
+                <button type="button" class="btn-close" aria-label="Close form" @onclick="CancelEdit"></button>
+            </div>
+            <div class="card-body">
+                <EditForm Model="editPerson" OnValidSubmit="SaveAsync">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="person-first-name">First name</label>
+                            <InputText id="person-first-name" class="form-control" @bind-Value="editPerson.FirstName" />
+                            <ValidationMessage For="@(() => editPerson.FirstName)" />
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="person-last-name">Last name</label>
+                            <InputText id="person-last-name" class="form-control" @bind-Value="editPerson.LastName" />
+                            <ValidationMessage For="@(() => editPerson.LastName)" />
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label" for="person-age">Age</label>
+                            <InputNumber id="person-age" class="form-control" @bind-Value="editPerson.Age" min="0" />
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label" for="person-citizenship">Citizenship</label>
+                            <InputText id="person-citizenship" class="form-control" @bind-Value="editPerson.Citizenship" />
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label" for="person-nationality">Nationality</label>
+                            <InputText id="person-nationality" class="form-control" @bind-Value="editPerson.Nationality" />
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label" for="person-nickname">Nickname</label>
+                            <InputText id="person-nickname" class="form-control" @bind-Value="editPerson.Nickname" />
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label" for="person-height">Height</label>
+                            <InputNumber id="person-height" class="form-control" @bind-Value="editPerson.Height" />
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label" for="person-weight">Weight</label>
+                            <InputNumber id="person-weight" class="form-control" @bind-Value="editPerson.Weight" />
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="person-released">Registration date</label>
+                            <InputDate id="person-released" class="form-control" @bind-Value="editPerson.Released" />
+                            <ValidationMessage For="@(() => editPerson.Released)" />
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label" for="person-bio">Notes</label>
+                            <InputTextArea id="person-bio" class="form-control" @bind-Value="editPerson.Bio" />
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <InputCheckbox id="person-discontinued" class="form-check-input" @bind-Value="editPerson.Discontinued" />
+                                <label class="form-check-label" for="person-discontinued">Inactive</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary" disabled="@isSaving">@(isSaving ? "Saving…" : "Save record")</button>
+                        <button type="button" class="btn btn-outline-secondary" disabled="@isSaving" @onclick="CancelEdit">Cancel</button>
+                    </div>
+                </EditForm>
+            </div>
+        </section>
+    }
+
+    <section class="card shadow-sm">
+        <div class="card-header bg-body d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <h2 class="h5 mb-0">@Title <span class="badge text-bg-secondary">@FilteredPeople.Count</span></h2>
+            <input class="form-control" style="max-width: 20rem" type="search" placeholder="Search people" aria-label="Search people" @bind="searchText" @bind:event="oninput" />
+        </div>
+        @if (isLoading)
+        {
+            <div class="card-body text-body-secondary" role="status">Loading records…</div>
+        }
+        else if (FilteredPeople.Count == 0)
+        {
+            <div class="card-body text-center py-5">
+                <p class="h5">No records found</p>
+                <p class="text-body-secondary mb-3">Add a record to get started, or try a different search.</p>
+                <button type="button" class="btn btn-outline-primary" @onclick="StartCreate">Add @Singular</button>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr><th>Name</th><th>Age</th><th>Citizenship</th><th>Nationality</th><th>Status</th><th class="text-end">Actions</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var person in FilteredPeople)
+                        {
+                            <tr @key="person.Id">
+                                <td><span class="fw-semibold">@person.FirstName @person.LastName</span>@if (!string.IsNullOrWhiteSpace(person.Nickname)) { <span class="d-block small text-body-secondary">@person.Nickname</span> }</td>
+                                <td>@(person.Age > 0 ? person.Age : "—")</td>
+                                <td>@DisplayOrDash(person.Citizenship)</td>
+                                <td>@DisplayOrDash(person.Nationality)</td>
+                                <td><span class="badge @(person.Discontinued ? "text-bg-secondary" : "text-bg-success")">@(person.Discontinued ? "Inactive" : "Active")</span></td>
+                                <td class="text-end text-nowrap">
+                                    <button type="button" class="btn btn-sm btn-outline-primary me-1" aria-label="Edit @person.FirstName @person.LastName" @onclick="(() => StartEdit(person))">Edit</button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" aria-label="Delete @person.FirstName @person.LastName" @onclick="(() => ConfirmDelete(person))">Delete</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    @if (personToDelete is not null)
+    {
+        <div class="alert alert-warning mt-3 d-flex flex-wrap justify-content-between align-items-center gap-2" role="alert">
+            <span>Delete <strong>@personToDelete.FirstName @personToDelete.LastName</strong>? This cannot be undone.</span>
+            <span class="text-nowrap">
+                <button type="button" class="btn btn-sm btn-danger me-2" disabled="@isDeleting" @onclick="DeleteAsync">@(isDeleting ? "Deleting…" : "Confirm delete")</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" disabled="@isDeleting" @onclick="CancelDelete">Cancel</button>
+            </span>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public int CategoryId { get; set; }
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Singular { get; set; } = "person";
+
+    private List<Person> people = [];
+    private Person editPerson = new();
+    private Person? personToDelete;
+    private string searchText = string.Empty;
+    private string? errorMessage;
+    private string? statusMessage;
+    private bool isLoading = true;
+    private bool isEditing;
+    private bool isSaving;
+    private bool isDeleting;
+
+    private List<Person> FilteredPeople => people
+        .Where(person => string.IsNullOrWhiteSpace(searchText)
+            || $"{person.FirstName} {person.LastName} {person.Citizenship} {person.Nationality} {person.Nickname}".Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase))
+        .OrderBy(person => person.FirstName)
+        .ThenBy(person => person.LastName)
+        .ToList();
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+        try
+        {
+            people = await PersonService.GetByCategoryAsync(CategoryId);
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Unable to load people records for category {CategoryId}.", CategoryId);
+            errorMessage = $"Could not load {Title.ToLowerInvariant()} records. Please try again.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void StartCreate()
+    {
+        errorMessage = null;
+        statusMessage = null;
+        personToDelete = null;
+        editPerson = new Person { CategoryId = CategoryId, Released = DateTime.Today };
+        isEditing = true;
+    }
+
+    private void StartEdit(Person person)
+    {
+        errorMessage = null;
+        statusMessage = null;
+        personToDelete = null;
+        editPerson = new Person
+        {
+            Id = person.Id,
+            CategoryId = CategoryId,
+            FirstName = person.FirstName,
+            LastName = person.LastName,
+            Bio = person.Bio,
+            Discontinued = person.Discontinued,
+            Nickname = person.Nickname,
+            Height = person.Height,
+            Weight = person.Weight,
+            Age = person.Age,
+            Citizenship = person.Citizenship,
+            Nationality = person.Nationality,
+            Released = person.Released
+        };
+        isEditing = true;
+    }
+
+    private async Task SaveAsync()
+    {
+        isSaving = true;
+        errorMessage = null;
+        statusMessage = null;
+        try
+        {
+            if (editPerson.Id == 0)
+            {
+                editPerson.Id = await PersonService.CreateAsync(editPerson);
+                people.Add(editPerson);
+                statusMessage = $"{Singular} added.";
+            }
+            else if (await PersonService.UpdateAsync(editPerson.Id, editPerson))
+            {
+                var index = people.FindIndex(person => person.Id == editPerson.Id);
+                if (index >= 0) people[index] = editPerson;
+                statusMessage = $"{Singular} updated.";
+            }
+            else
+            {
+                errorMessage = "This record no longer exists. Refresh the list and try again.";
+                return;
+            }
+            isEditing = false;
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Unable to save person record {PersonId}.", editPerson.Id);
+            errorMessage = $"Could not save this {Singular}. Please check the database connection and try again.";
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private void ConfirmDelete(Person person)
+    {
+        errorMessage = null;
+        statusMessage = null;
+        isEditing = false;
+        personToDelete = person;
+    }
+
+    private async Task DeleteAsync()
+    {
+        var deletedPerson = personToDelete;
+        if (deletedPerson is null) return;
+        isDeleting = true;
+        errorMessage = null;
+        statusMessage = null;
+        try
+        {
+            if (await PersonService.DeleteAsync(deletedPerson.Id))
+            {
+                people.RemoveAll(person => person.Id == deletedPerson.Id);
+                statusMessage = $"{Singular} deleted.";
+                personToDelete = null;
+            }
+            else
+            {
+                errorMessage = "This record could not be found. Refresh the list and try again.";
+            }
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Unable to delete person record {PersonId}.", deletedPerson.Id);
+            errorMessage = $"Could not delete this {Singular}. Please check the database connection and try again.";
+        }
+        finally
+        {
+            isDeleting = false;
+        }
+    }
+
+    private void CancelEdit() => isEditing = false;
+    private void CancelDelete() => personToDelete = null;
+    private static string DisplayOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "—" : value;
+}
