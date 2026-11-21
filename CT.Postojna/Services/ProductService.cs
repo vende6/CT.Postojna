@@ -97,13 +97,19 @@ namespace CT.Postojna.Services
         {
             Id = reader.GetInt32(reader.GetOrdinal("Id")),
             CategoryId = reader.IsDBNull(reader.GetOrdinal("CategoryId")) ? null : reader.GetInt32(reader.GetOrdinal("CategoryId")),
-            CategoryName = reader.GetString(reader.GetOrdinal("CategoryName")),
-            Description = reader.GetString(reader.GetOrdinal("Description")),
+            CategoryName = ReadString(reader, "CategoryName"),
+            Description = ReadString(reader, "Description"),
             Discontinued = reader.GetBoolean(reader.GetOrdinal("Discontinued")),
-            Name = reader.GetString(reader.GetOrdinal("Name")),
+            Name = ReadString(reader, "Name"),
             Price = reader.IsDBNull(reader.GetOrdinal("Price")) ? null : reader.GetDecimal(reader.GetOrdinal("Price")),
             Quantity = reader.GetInt32(reader.GetOrdinal("Quantity")),
             Released = reader.IsDBNull(reader.GetOrdinal("Released")) ? null : reader.GetDateTime(reader.GetOrdinal("Released"))
         };
+
+        private static string ReadString(System.Data.Common.DbDataReader reader, string columnName)
+        {
+            var ordinal = reader.GetOrdinal(columnName);
+            return reader.IsDBNull(ordinal) ? string.Empty : reader.GetString(ordinal);
+        }
     }
 }

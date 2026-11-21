@@ -103,7 +103,10 @@ namespace CT.Postojna.Services
             command.Parameters.AddWithValue("@AheadOfTimeGOAT", activity.AheadOfTimeGOAT);
             await command.ExecuteNonQueryAsync();
             await using var idCommand = new MySqlCommand("SELECT LAST_INSERT_ID()", connection);
-            return Convert.ToInt32(await idCommand.ExecuteScalarAsync());
+            var id = Convert.ToInt32(await idCommand.ExecuteScalarAsync());
+            return id > 0
+                ? id
+                : throw new InvalidOperationException("The Activity table did not generate a valid ID.");
         }
 
         public async Task<bool> UpdateAsync(int id, Activity activity)
@@ -141,12 +144,18 @@ namespace CT.Postojna.Services
         {
             Id = reader.GetInt32(reader.GetOrdinal("Id")),
             CategoryId = reader.IsDBNull(reader.GetOrdinal("CategoryId")) ? null : reader.GetInt32(reader.GetOrdinal("CategoryId")),
-            CategoryName = reader.GetString(reader.GetOrdinal("CategoryName")),
-            Description = reader.GetString(reader.GetOrdinal("Description")),
-            Name = reader.GetString(reader.GetOrdinal("Name")),
-            Duration = reader.GetString(reader.GetOrdinal("Duration")),
-            AheadOfTimeGOAT = reader.GetString(reader.GetOrdinal("AheadOfTimeGOAT")),
+            CategoryName = ReadString(reader, "CategoryName"),
+            Description = ReadString(reader, "Description"),
+            Name = ReadString(reader, "Name"),
+            Duration = ReadString(reader, "Duration"),
+            AheadOfTimeGOAT = ReadString(reader, "AheadOfTimeGOAT"),
             values = Array.Empty<Person>()
         };
+
+        private static string ReadString(System.Data.Common.DbDataReader reader, string columnName)
+        {
+            var ordinal = reader.GetOrdinal(columnName);
+            return reader.IsDBNull(ordinal) ? string.Empty : reader.GetString(ordinal);
+        }
     }
 }

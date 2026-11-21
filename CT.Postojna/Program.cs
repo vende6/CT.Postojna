@@ -2,8 +2,37 @@ using CT.Postojna;
 using CT.Postojna.Components;
 using CT.Postojna.Models;
 using CT.Postojna.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseMySql(connectionString, new MySqlServerVersion(new Version(5, 5, 62))));
+
+builder.Services.AddIdentityCore<ApplicationUser>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = true;
+})
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddSignInManager()
+    .AddDefaultTokenProviders();
+
+builder.Services.AddAuthorization();
+builder.Services.AddRazorPages();
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = IdentityConstants.ApplicationScheme;
+    options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+})
+    .AddIdentityCookies();
+
+builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -18,6 +47,40 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await dbContext.Database.MigrateAsync();
+}
+
+var demoEmail = builder.Configuration["DemoAccount:Email"];
+var demoPassword = builder.Configuration["DemoAccount:Password"];
+if ((demoEmail is null) != (demoPassword is null))
+{
+    throw new InvalidOperationException("Both DemoAccount:Email and DemoAccount:Password must be configured together.");
+}
+
+if (demoEmail is not null && demoPassword is not null)
+{
+    using var scope = app.Services.CreateScope();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+    if (await userManager.FindByEmailAsync(demoEmail) is null)
+    {
+        var user = new ApplicationUser
+        {
+            UserName = demoEmail,
+            Email = demoEmail,
+            EmailConfirmed = true
+        };
+        var result = await userManager.CreateAsync(user, demoPassword);
+        if (!result.Succeeded)
+        {
+            var errors = string.Join("; ", result.Errors.Select(error => error.Description));
+            throw new InvalidOperationException($"Unable to create the configured demo account: {errors}");
+        }
+    }
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -31,6 +94,10 @@ if (!app.Environment.IsDevelopment())
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapRazorPages();
 
 app.MapGet("/api/activities", async (ActivityService service) => Results.Ok(await service.GetAllAsync()));
 app.MapGet("/api/activities/{id:int}", async (int id, ActivityService service) =>

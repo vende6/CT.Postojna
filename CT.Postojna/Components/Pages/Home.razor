@@ -2,8 +2,13 @@
 @rendermode InteractiveServer
 @inject CT.Postojna.Services.StripeCheckoutService StripeCheckout
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthStateProvider
 
 <PageTitle>CT Postojna</PageTitle>
+
+<AuthorizeView Roles="Admin">
+    <p>Welcome, Administrator</p>
+</AuthorizeView>
 
 <h1>Burger Menu</h1>
 
@@ -144,6 +149,15 @@
     private bool isCartOpen;
     private bool isCheckoutInProgress;
     private string? checkoutError;
+    private bool isAuthenticated;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        isAuthenticated = user.Identity?.IsAuthenticated == true;
+    }
 
     private int burgerCount => cartItems.Where(item => item.Category == "Burger").Sum(item => item.Quantity);
     private int totalPrice => cartItems.Where(item => item.Category == "Burger").Sum(item => item.Price * item.Quantity);

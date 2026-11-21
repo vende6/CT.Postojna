@@ -4,6 +4,7 @@
 @using CT.Postojna.Services
 @inject ActivityService ActivityService
 @inject ILogger<GridOverview> Logger
+@inject NavigationManager NavigationManager
 
 <PageTitle>Activities</PageTitle>
 
@@ -207,9 +208,9 @@
         {
             if (editActivity.Id == 0)
             {
-                editActivity.Id = await ActivityService.CreateAsync(editActivity);
-                activities.Add(editActivity);
-                statusMessage = "Activity added.";
+                await ActivityService.CreateAsync(editActivity);
+                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+                return;
             }
             else if (await ActivityService.UpdateAsync(editActivity.Id, editActivity))
             {

@@ -1,10 +1,11 @@
-﻿using MySql.Data.MySqlClient;
+using MySql.Data.MySqlClient;
 
 namespace CT.Postojna
 {
-    public class DbConnection
+    public class DbConnection(IConfiguration configuration)
     {
-        private readonly string connStr = "Server=sql8.freesqldatabase.com;Port=3306;Database=sql8841003;Uid=sql8841003;Pwd=EZTwry86LA;";
+        private readonly string connStr = configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
         public MySqlConnection CreateConnection() => new(connStr);
     }

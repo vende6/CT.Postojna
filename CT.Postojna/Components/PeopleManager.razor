@@ -2,6 +2,7 @@
 @using CT.Postojna.Services
 @inject PersonService PersonService
 @inject ILogger<PeopleManager> Logger
+@inject NavigationManager NavigationManager
 
 <div class="container-fluid py-4">
     <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
@@ -235,9 +236,9 @@
         {
             if (editPerson.Id == 0)
             {
-                editPerson.Id = await PersonService.CreateAsync(editPerson);
-                people.Add(editPerson);
-                statusMessage = $"{Singular} added.";
+                await PersonService.CreateAsync(editPerson);
+                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+                return;
             }
             else if (await PersonService.UpdateAsync(editPerson.Id, editPerson))
             {

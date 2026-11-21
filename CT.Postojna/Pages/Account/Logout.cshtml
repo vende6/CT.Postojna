@@ -1,0 +1,24 @@
+@page "/Account/Logout"
+@model CT.Postojna.Pages.Account.LogoutModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Logout - CT Postojna</title>
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
+</head>
+<body>
+    <main class="container py-5" style="max-width: 480px;">
+        <h1 class="h3 mb-4">Log out</h1>
+        <p>Are you sure you want to log out?</p>
+        <form method="post">
+            <button type="submit" class="btn btn-danger">Log out</button>
+            <a class="btn btn-link" href="/">Cancel</a>
+        </form>
+    </main>
+</body>
+</html>

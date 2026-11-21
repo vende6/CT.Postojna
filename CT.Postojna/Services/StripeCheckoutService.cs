@@ -9,6 +9,8 @@ public sealed class StripeCheckoutService(
     IConfiguration configuration,
     ILogger<StripeCheckoutService> logger)
 {
+    //rotate the database password that was pasted earlier and store the replacement outside source code.
+
     private static readonly IReadOnlyDictionary<string, (string Name, long UnitAmount)> Products =
         new Dictionary<string, (string Name, long UnitAmount)>
         {

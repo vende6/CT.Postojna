@@ -73,7 +73,10 @@ namespace CT.Postojna.Services
             AddParameters(command, person);
             await command.ExecuteNonQueryAsync();
             await using var idCommand = new MySqlCommand("SELECT LAST_INSERT_ID()", connection);
-            return Convert.ToInt32(await idCommand.ExecuteScalarAsync());
+            var id = Convert.ToInt32(await idCommand.ExecuteScalarAsync());
+            return id > 0
+                ? id
+                : throw new InvalidOperationException("The Person table did not generate a valid ID.");
         }
 
         public async Task<bool> UpdateAsync(int id, Person person)
@@ -122,17 +125,23 @@ namespace CT.Postojna.Services
         {
             Id = reader.GetInt32(reader.GetOrdinal("Id")),
             CategoryId = reader.IsDBNull(reader.GetOrdinal("CategoryId")) ? null : reader.GetInt32(reader.GetOrdinal("CategoryId")),
-            FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
-            LastName = reader.GetString(reader.GetOrdinal("LastName")),
-            Bio = reader.GetString(reader.GetOrdinal("Bio")),
+            FirstName = ReadString(reader, "FirstName"),
+            LastName = ReadString(reader, "LastName"),
+            Bio = ReadString(reader, "Bio"),
             Discontinued = reader.GetBoolean(reader.GetOrdinal("Discontinued")),
-            Nickname = reader.GetString(reader.GetOrdinal("Nickname")),
+            Nickname = ReadString(reader, "Nickname"),
             Height = reader.IsDBNull(reader.GetOrdinal("Height")) ? null : reader.GetDecimal(reader.GetOrdinal("Height")),
             Weight = reader.IsDBNull(reader.GetOrdinal("Weight")) ? null : reader.GetDecimal(reader.GetOrdinal("Weight")),
             Age = reader.GetInt32(reader.GetOrdinal("Age")),
-            Citizenship = reader.GetString(reader.GetOrdinal("Citizenship")),
-            Nationality = reader.GetString(reader.GetOrdinal("Nationality")),
+            Citizenship = ReadString(reader, "Citizenship"),
+            Nationality = ReadString(reader, "Nationality"),
             Released = reader.IsDBNull(reader.GetOrdinal("Released")) ? null : reader.GetDateTime(reader.GetOrdinal("Released"))
         };
+
+        private static string ReadString(System.Data.Common.DbDataReader reader, string columnName)
+        {
+            var ordinal = reader.GetOrdinal(columnName);
+            return reader.IsDBNull(ordinal) ? string.Empty : reader.GetString(ordinal);
+        }
     }
 }
