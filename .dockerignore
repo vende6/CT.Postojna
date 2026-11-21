@@ -1,0 +1,7 @@
+.git
+**/bin
+**/obj
+session-state
+README.md
+appsettings*.json
+**/appsettings*.json

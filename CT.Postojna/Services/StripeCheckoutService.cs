@@ -29,8 +29,7 @@ public sealed class StripeCheckoutService(
         Uri appBaseUri,
         CancellationToken cancellationToken = default)
     {
-        var secretKey = "sk_test_51U2S9wDyVAspCC9RJM4MlnHRzn3LIwMQTwDOpUlSYvVYuL5z1yByaejcbR0OxjeSEBjtHj0IRfC7DMbnLXWxlGi500OVqob90Q";
-        //var secretKey = configuration["Stripe:SecretKey"];
+        var secretKey = configuration["Stripe:SecretKey"];
         if (string.IsNullOrWhiteSpace(secretKey))
         {
             logger.LogError("Stripe checkout was requested, but Stripe:SecretKey is not configured.");

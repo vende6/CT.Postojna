@@ -6,15 +6,11 @@ and open CT.Postajna.slnx
 
 Run the app by clicking "https" at the top of Visual Studio program.
 
-Good luck!
+GitHub Pages serves static files and cannot host this interactive ASP.NET Core app. A Render Blueprint is provided in `render.yaml`; create a new Blueprint from this repository in Render to provision the web service.
 
-LIVE APPLICATION IN YOUR BROWSER AT: https://vende6.github.io/CT.Postojna/
+Configure these environment variables as secrets in the Render dashboard (never commit their values):
 
-Host: sql8.freesqldatabase.com
-Database name: sql8841003
-Database user: sql8841003
-Database password: EZTwry86LA
-Port number: 3306
+- `ConnectionStrings__DefaultConnection`: the rotated MySQL connection string. The database must allow connections from Render.
+- `Stripe__SecretKey`: a Stripe test key for testing or a live key for production.
 
-•	Email: demo-ctpostojna-20261121@example.com
-•	Password: PostojnaDemo!72fe7588f1944b2092c126d3812da8ffA9
+The free Render service sleeps when idle and may take about a minute to wake. Render's free tier is intended for testing and hobby projects, not production. Local `appsettings*.json` files are excluded from the Docker build and publish output. Rotate database and demo-account credentials that were previously committed; removing them from the working tree does not remove them from Git history.

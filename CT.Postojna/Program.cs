@@ -2,15 +2,26 @@ using CT.Postojna;
 using CT.Postojna.Components;
 using CT.Postojna.Models;
 using CT.Postojna.Services;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
+if (builder.Environment.IsProduction() && builder.Configuration["RENDER"] == "true")
+{
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    {
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
+        options.KnownIPNetworks.Clear();
+        options.KnownProxies.Clear();
+        options.ForwardLimit = 1;
+    });
+}
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(connectionString, new MySqlServerVersion(new Version(5, 5, 62))));
 
@@ -93,6 +104,10 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
+if (app.Environment.IsProduction() && app.Configuration["RENDER"] == "true")
+{
+    app.UseForwardedHeaders();
+}
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
